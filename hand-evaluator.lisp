@@ -3,7 +3,8 @@
 (in-package #:hand-evaluator)
 
 (defun best-poker-hand (raw-cards)
-  "Accepts 1 or more cards and identifies the best poker hand among
+  "Accepts 1 or more cards (which are represented as two character
+strings, e.g., \"As\") and identifies the best poker hand among
 them. Return the value of the hand."
   (cond
     ((null raw-cards) nil)
@@ -29,38 +30,7 @@ them. Return the value of the hand."
      (list (pair-rank hand) 'pair))
     (t (list (high-card-rank hand) 'high-card))))
 
-;;;;
-
-(defun sort-packed (packed)
-  (let ((lists (sort (remove-if-not #'listp packed) #'> :key #'(lambda (x) (card-rank-values (car x)))))
-	(cards (remove-if #'listp packed)))
-    (append lists cards)))
-
-(defun pack-by-rank (ranks)
-  (cond
-    ((null ranks) nil)
-    ((not (member (get-rank (car ranks))
-    		  (mapcar #'get-rank (cdr ranks))
-		  :test #'string=))
-     (cons (car ranks) (pack-by-rank (cdr ranks))))
-    (t
-     (cons
-      (cons (car ranks) (remove-if
-			 #'(lambda (c)
-			     (not
-			      (string=
-			       (get-rank c)
-			       (get-rank (car ranks)))))
-			 (cdr ranks)))
-      (pack-by-rank (remove-if
-	       #'(lambda (x)
-		   (string=
-		    (get-rank x)
-		    (get-rank (car ranks))))
-	       (cdr ranks)))))))
-
-(defun get-rank (card)
-  (subseq card 0 1))
+;;;; hand tests
 
 (defun straight-p (cards)
   (let ((sorted (sort (mapcar #'card-rank-values cards) #'<)))
@@ -81,17 +51,14 @@ them. Return the value of the hand."
   (let* ((suits (mapcar #'(lambda (x) (subseq x 1 2)) cards))
 	 (tar (first suits))
 	 (res t))
-    (if (= (length suits) 5)
-	(progn
-	  (dolist (suit suits)
-	    (when (not (string= suit tar))
-	      (setf res nil)))
-	  res))))
+    (when (= (length suits) 5)
+      (dolist (suit suits)
+	(when (not (string= suit tar))
+	  (setf res nil)))
+      res)))
 
 (defun straight-flush-p (cards)
-  (if (and (straight-p cards) (flush-p cards))
-      t
-      nil))
+  (when (and (straight-p cards) (flush-p cards)) t))
 
 (defun quads-p (cards)
   (let* ((packed (pack-by-rank cards))
@@ -131,7 +98,7 @@ them. Return the value of the hand."
 	       (= (length (car lists)) 2))
       t)))
 
-;;;;
+;;;; rankers
 
 (defun high-card-rank (hand)
   "Return the high-card-rank of a given hand."
@@ -159,7 +126,10 @@ them. Return the value of the hand."
 
 (defun trips-rank (cards)
   (let* ((packed (pack-by-rank cards))
-	 (trips (car (remove-if #'(lambda (x) (not (and (listp x) (= (length x) 3)))) packed)))
+	 (trips (car
+		 (remove-if
+		  #'(lambda (x) (not (and (listp x) (= (length x) 3))))
+		  packed)))
 	 (kickers (remove-if #'listp packed)))
     (+ (get-trips-value (card-rank-values (car trips)))
        (1+ (position
@@ -186,13 +156,15 @@ them. Return the value of the hand."
   (+ 4506 (car (sort (mapcar #'card-rank-values flush) #'>))))
 
 (defun house-rank (hand)
-  (let ((ahand (pack-by-rank (sort hand #'> :key #'(lambda (x) (card-rank-values x))))))
+  (let ((ahand (sort-packed (pack-by-rank hand))))
     (labels ((get-rank (trip-rank pair-rank)
 	       (cond
 		 ((and (= trip-rank 2) (= pair-rank 3)) 4521)
 		 ((> pair-rank 2) (1+ (get-rank trip-rank (1- pair-rank))))
 		 ((= pair-rank 2) (1+ (get-rank (1- trip-rank) 14))))))
-      (get-rank (card-rank-values (caar ahand)) (card-rank-values (car (cadr ahand)))))))
+      (get-rank
+       (card-rank-values (caar ahand))
+       (card-rank-values (car (cadr ahand)))))))
 
 (defun quads-rank (hand)
   (labels ((get-rank (quad-rank kicker-rank)
@@ -205,7 +177,41 @@ them. Return the value of the hand."
 (defun straight-flush-rank (str-fl)
   (+ 192 (straight-rank str-fl)))
 
-;;;
+;;;; helpers
+
+(defun sort-packed (packed)
+  (let ((lists
+	 (sort (remove-if-not #'listp packed)
+	       #'>
+	       :key #'(lambda (x) (card-rank-values (car x)))))
+	(cards (remove-if #'listp packed)))
+    (append lists cards)))
+
+(defun pack-by-rank (ranks)
+  (cond
+    ((null ranks) nil)
+    ((not (member (get-rank (car ranks))
+    		  (mapcar #'get-rank (cdr ranks))
+		  :test #'string=))
+     (cons (car ranks) (pack-by-rank (cdr ranks))))
+    (t
+     (cons
+      (cons (car ranks) (remove-if
+			 #'(lambda (c)
+			     (not
+			      (string=
+			       (get-rank c)
+			       (get-rank (car ranks)))))
+			 (cdr ranks)))
+      (pack-by-rank (remove-if
+	       #'(lambda (x)
+		   (string=
+		    (get-rank x)
+		    (get-rank (car ranks))))
+	       (cdr ranks)))))))
+
+(defun get-rank (card)
+  (subseq card 0 1))
 
 (defun card-rank-values (item)
   "Convert a card or a list of cards to their rank values."
@@ -241,7 +247,8 @@ given pair."
   (remove-if #'(lambda (x) (member rank x)) from))
 
 (defun combinations (m list)
-  "Find all m-sized combinations from list"
+  "Find all m-sized combinations from list. Nicked this from
+somewhere, but I can't recall where...:/"
   (let ((res nil))
     (labels ((comb1 (l c m)
 	       (when (>= (length l) m)
