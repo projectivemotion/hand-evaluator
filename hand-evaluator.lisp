@@ -3,9 +3,10 @@
 (in-package #:hand-evaluator)
 
 (defun best-poker-hand (raw-cards)
-  "Accepts 1 or more cards (which are represented as two character
-strings, e.g., \"As\") and identifies the best poker hand among
-them. Return the value of the hand."
+  "Accepts 1 or more cards (which should be two character strings,
+e.g., \"As\") and identifies the best poker hand among them. Returns a
+list of the value of the hand, the hand name, and the cards making the
+hand."
   (cond
     ((null raw-cards) nil)
     ((>= (length raw-cards) 5)
