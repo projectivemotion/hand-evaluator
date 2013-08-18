@@ -136,7 +136,6 @@ hand."
 	   (card-rank-values (car (nth 0 packed)))
 	   (card-rank-values (car (nth 1 packed))))))))
 
-;; FIXME: chokes without a kicker
 (defun trips-rank (cards)
   (let* ((packed (pack-by-rank cards))
 	 (trips (car
@@ -144,11 +143,15 @@ hand."
 		  #'(lambda (x) (not (and (listp x) (= (length x) 3))))
 		  packed)))
 	 (kickers (remove-if #'listp packed)))
-    (+ (get-trips-value (card-rank-values (car trips)))
-       (1+ (position
-	    (sort (mapcar #'card-rank-values kickers) #'>)
-	    (remove-kickers (card-rank-values (car trips)) *trips-kickers*)
-	    :test #'equal)))))
+    (if kickers
+	(progn
+	  (+ (get-trips-value (card-rank-values (car trips)))
+	     (1+ (position
+		  (sort (mapcar #'card-rank-values kickers) #'>)
+		  (remove-kickers (card-rank-values (car trips)) *trips-kickers*)
+		  :test #'equal))))
+	(progn
+	  (get-trips-value (card-rank-values (car trips)))))))
 
 (defun straight-rank (cards)
   (let ((sorted (sort (mapcar #'card-rank-values
