@@ -123,6 +123,7 @@ hand."
 	(progn
 	  (get-pair-value (card-rank-values (car pair)))))))
 
+;; FIXME: chokes without a kicker
 (defun two-pair-rank (cards)
   (let ((packed (sort-packed (pack-by-rank cards))))
     (+ (get-two-pair-values
@@ -130,6 +131,7 @@ hand."
 	(card-rank-values (car (nth 1 packed))))
        (card-rank-values (car (last packed))))))
 
+;; FIXME: chokes without a kicker
 (defun trips-rank (cards)
   (let* ((packed (pack-by-rank cards))
 	 (trips (car
@@ -172,6 +174,7 @@ hand."
        (card-rank-values (caar ahand))
        (card-rank-values (car (cadr ahand)))))))
 
+;; FIXME: chokes without a kicker
 (defun quads-rank (hand)
   (labels ((get-rank (quad-rank kicker-rank)
 	     (cond
