@@ -105,18 +105,23 @@ hand."
   "Return the high-card-rank of a given hand."
   (car (card-rank-values hand)))
 
-;;FIXME: if we have fewer than three kickers, this will fail. There
-;;can be 0, 1, 2 or 3 kickers, so I need to be able to supply those
-;;kicker lists....
+(defun get-kickers-value (pair kickers kicker-type)
+  (let ((val (position
+		  (sort (mapcar #'card-rank-values kickers) #'>)
+		  (remove-kickers (card-rank-values (car pair)) kicker-type)
+		  :test #'equal)))
+    (if val val 0)))
+
 (defun pair-rank (hand)
   (let* ((packed (pack-by-rank hand))
 	 (pair (car (remove-if-not #'listp packed)))
 	 (kickers (remove-if #'listp packed)))
-    (+ (get-pair-value (card-rank-values (car pair)))
-       (1+ (position
-	    (sort (mapcar #'card-rank-values kickers) #'>)
-	    (remove-kickers (card-rank-values (car pair)) *pair-kickers*)
-	    :test #'equal)))))
+    (if kickers
+	(progn
+	  (+ (get-pair-value (card-rank-values (car pair)))
+	     (1+ (get-kickers-value pair kickers *pair-kickers*))))
+	(progn
+	  (get-pair-value (card-rank-values (car pair)))))))
 
 (defun two-pair-rank (cards)
   (let ((packed (sort-packed (pack-by-rank cards))))
