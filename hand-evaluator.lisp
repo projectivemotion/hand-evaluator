@@ -63,7 +63,7 @@ hand."
 
 (defun quads-p (cards)
   (let* ((packed (pack-by-rank cards))
-	(lists (remove-if-not #'listp packed)))
+	 (lists (remove-if-not #'listp packed)))
     (when (and (= 1 (length lists)) (= 4 (length (car lists))))
       t)))
 
