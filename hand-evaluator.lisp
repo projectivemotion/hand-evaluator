@@ -182,14 +182,15 @@ hand."
        (card-rank-values (caar ahand))
        (card-rank-values (car (cadr ahand)))))))
 
-;; FIXME: chokes without a kicker
 (defun quads-rank (hand)
   (labels ((get-rank (quad-rank kicker-rank)
 	     (cond
 	       ((and (= quad-rank 2) (= kicker-rank 3)) 4688)
 	       ((> kicker-rank 2) (1+ (get-rank quad-rank (1- kicker-rank))))
 	       ((= kicker-rank 2) (1+ (get-rank (1- quad-rank) 14))))))
-    (get-rank (card-rank-values (car hand)) (card-rank-values (cadr hand)))))
+    (if (card-rank-values (cdr hand))
+	(get-rank (card-rank-values (car hand)) (card-rank-values (cadr hand)))
+	(get-rank (card-rank-values (car hand)) 3))))
 
 (defun straight-flush-rank (str-fl)
   (+ 192 (straight-rank str-fl)))
