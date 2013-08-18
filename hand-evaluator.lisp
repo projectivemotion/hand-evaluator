@@ -188,9 +188,9 @@ hand."
 	       ((and (= quad-rank 2) (= kicker-rank 3)) 4688)
 	       ((> kicker-rank 2) (1+ (get-rank quad-rank (1- kicker-rank))))
 	       ((= kicker-rank 2) (1+ (get-rank (1- quad-rank) 14))))))
-    (if (card-rank-values (cdr hand))
-	(get-rank (card-rank-values (car hand)) (card-rank-values (cadr hand)))
-	(get-rank (card-rank-values (car hand)) 3))))
+    (if (cadr hand)
+	(get-rank (card-rank-values (caar hand)) (card-rank-values (cadr hand)))
+	(get-rank (card-rank-values (caar hand)) 3))))
 
 (defun straight-flush-rank (str-fl)
   (+ 192 (straight-rank str-fl)))
