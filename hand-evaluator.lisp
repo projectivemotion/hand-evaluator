@@ -20,7 +20,7 @@ hand."
 (defun eval-hand (hand)
   (cond
     ((straight-flush-p hand) (list (straight-flush-rank hand) 'straight-flush))
-    ((quads-p hand) (list (quads-rank (pack-by-rank hand)) 'quads))
+    ((quads-p hand) (list (quads-rank hand) 'quads))
     ((house-p hand) (list (house-rank hand) 'house))
     ((flush-p hand) (list (flush-rank hand) 'flush))
     ((straight-p hand) (list (straight-rank hand) 'straight))
@@ -183,14 +183,15 @@ hand."
        (card-rank-values (car (cadr ahand)))))))
 
 (defun quads-rank (hand)
-  (labels ((get-rank (quad-rank kicker-rank)
-	     (cond
-	       ((and (= quad-rank 2) (= kicker-rank 3)) 4688)
-	       ((> kicker-rank 2) (1+ (get-rank quad-rank (1- kicker-rank))))
-	       ((= kicker-rank 2) (1+ (get-rank (1- quad-rank) 14))))))
-    (if (cadr hand)
-	(get-rank (card-rank-values (caar hand)) (card-rank-values (cadr hand)))
-	(get-rank (card-rank-values (caar hand)) 3))))
+  (let ((packed (sort-packed (pack-by-rank hand))))
+    (labels ((get-rank (quad-rank kicker-rank)
+	       (cond
+		 ((and (= quad-rank 2) (= kicker-rank 3)) 4688)
+		 ((> kicker-rank 2) (1+ (get-rank quad-rank (1- kicker-rank))))
+		 ((= kicker-rank 2) (1+ (get-rank (1- quad-rank) 14))))))
+      (if (cadr packed)
+	  (get-rank (card-rank-values (caar packed)) (card-rank-values (cadr packed)))
+	  (get-rank (card-rank-values (caar packed)) 3)))))
 
 (defun straight-flush-rank (str-fl)
   (+ 192 (straight-rank str-fl)))
