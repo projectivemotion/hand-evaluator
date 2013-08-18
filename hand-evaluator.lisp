@@ -143,7 +143,7 @@ hand."
 		  #'(lambda (x) (not (and (listp x) (= (length x) 3))))
 		  packed)))
 	 (kickers (remove-if #'listp packed)))
-    (if kickers
+    (if (= (length kickers) 2)
 	(progn
 	  (+ (get-trips-value (card-rank-values (car trips)))
 	     (1+ (position
