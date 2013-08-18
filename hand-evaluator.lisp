@@ -9,7 +9,7 @@ list of the value of the hand, the hand name, and the cards making the
 hand."
   (cond
     ((null raw-cards) nil)
-    ((>= (length raw-cards) 5)
+    ((> (length raw-cards) 5)
      (let ((source (combinations 5 raw-cards))
 	   (res nil))
       (dolist (hand source)
