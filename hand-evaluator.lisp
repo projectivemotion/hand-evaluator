@@ -205,11 +205,11 @@ hand."
 			       (get-rank (car ranks)))))
 			 (cdr ranks)))
       (pack-by-rank (remove-if
-	       #'(lambda (x)
-		   (string=
-		    (get-rank x)
-		    (get-rank (car ranks))))
-	       (cdr ranks)))))))
+		     #'(lambda (x)
+			 (string=
+			  (get-rank x)
+			  (get-rank (car ranks))))
+		     (cdr ranks)))))))
 
 (defun get-rank (card)
   (subseq card 0 1))
