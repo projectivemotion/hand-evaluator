@@ -1,5 +1,5 @@
 ;;;; package.lisp
 
 (defpackage #:hand-evaluator
-  (:use #:cl))
-
+  (:use #:cl)
+  (:export #:best-poker-hand))
